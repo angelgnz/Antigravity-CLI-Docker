@@ -1,0 +1,16 @@
+# Environment secrets
+.env
+*.env.local
+
+# Persistent workspace contents (project files)
+workspace/*
+!workspace/.gitkeep
+
+# Local data and secrets
+data/
+*.token
+*.log
+
+# Docker mounts / local state
+.gemini/
+.antigravity/
