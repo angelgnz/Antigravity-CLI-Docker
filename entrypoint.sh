@@ -148,8 +148,14 @@ case "$1" in
                         
                         # Instalar dependencias JS y compilar assets
                         if [ -f "package.json" ]; then
+                            echo "   🔍 Diagnosticando entorno Node.js:"
+                            echo "      Ruta node: $(which node || echo 'not found')"
+                            echo "      Versión node: $(node -v || echo 'error')"
+                            echo "      Ruta npm: $(which npm || echo 'not found')"
+                            echo "      Versión npm: $(npm -v || echo 'error')"
+                            
                             echo "   📦 Ejecutando npm install..."
-                            if npm install --include=dev; then
+                            if npm install --include=dev --verbose; then
                                 echo "   ✅ npm install exitoso."
                             else
                                 echo "   ❌ Error en npm install."
