@@ -4,8 +4,8 @@
     "install": {
       "commands": [
         "...",
-        "curl -fsSLO https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz",
-        "tar -xzf node-v20.18.0-linux-x64.tar.gz -C /usr/local --strip-components=1",
+        "curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && chmod +x /usr/local/bin/n",
+        "n 24",
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
         "ln -sf /app/.bin/agy /usr/local/bin/agy"
