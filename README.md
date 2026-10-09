@@ -10,7 +10,7 @@ Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas neces
 
 - 🤖 **Google Antigravity CLI (`agy`)**: Instalado automáticamente en el entorno y configurado para conectarse al panel de **Remote Control**.
 - 🚀 **Despliegue con Railpack**: Configuración nativa `railpack.json` para despliegues instantáneos y sin Dockerfile en Coolify.
-- 🐘 **PHP 8.4**: Versión forzada mediante `composer.json` y `railpack.json`.
+- 🐘 **PHP 8.4**: Versión detectada e instalada nativamente por Railpack (basado en `composer.json`).
 - 🗄️ **MariaDB Integrado**: Servidor de BD interno configurado de manera automática en cada despliegue.
 - 🐙 **GitHub CLI (`gh`)**: Incluido para operaciones de Git automatizadas o asistidas por el agente.
 - 📦 **Node.js 20**: Listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
