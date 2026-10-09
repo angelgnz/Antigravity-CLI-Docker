@@ -1,16 +1,6 @@
 {
   "$schema": "https://schema.railpack.com",
-  "packages": {
-    "curl": "*",
-    "git": "*",
-    "gh": "*",
-    "unzip": "*",
-    "zip": "*",
-    "nano": "*",
-    "tmux": "*",
-    "sqlite3": "*",
-    "mariadb-server": "*"
-  },
+  "packages": {},
   "steps": {
     "setup-tools": {
       "commands": [
@@ -30,6 +20,17 @@
       "DB_DATABASE": "laravel",
       "DB_USERNAME": "laravel_user",
       "DB_PASSWORD": "secret"
-    }
+    },
+    "aptPackages": [
+      "curl",
+      "git",
+      "gh",
+      "unzip",
+      "zip",
+      "nano",
+      "tmux",
+      "sqlite3",
+      "mariadb-server"
+    ]
   }
 }
