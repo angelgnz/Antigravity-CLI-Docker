@@ -4,14 +4,6 @@
     "install": {
       "commands": [
         "...",
-        "curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && chmod +x /usr/local/bin/n",
-        "n 24",
-        "echo '=== NODE INSTALLATION LOG ==='",
-        "which node",
-        "node -v",
-        "which npm",
-        "npm -v",
-        "echo '============================='",
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
         "ln -sf /app/.bin/agy /usr/local/bin/agy"

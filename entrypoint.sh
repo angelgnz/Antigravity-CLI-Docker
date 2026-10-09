@@ -78,6 +78,30 @@ case "$1" in
             echo ""
         fi
 
+        echo "======================================================================"
+        echo " 📦 Instalando/Configurando Node.js via NVM..."
+        echo "======================================================================"
+        # Forzamos NVM_DIR para que use el volumen persistente de Coolify
+        export NVM_DIR="$PERSISTENT_DIR/.nvm"
+        
+        # Solo descargamos nvm si no existe en el volumen persistente
+        if [ ! -d "$NVM_DIR" ]; then
+            echo "Descargando e instalando NVM..."
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.7/install.sh | bash
+        fi
+        
+        echo "Cargando NVM en el entorno del script..."
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        echo "Instalando Node.js v24..."
+        nvm install 24
+        nvm use 24
+
+        echo "Verificando instalación de Node..."
+        node -v
+        npm -v
+        echo "======================================================================"
+
         # Start MariaDB server FIRST so migrations can run
         echo "🗄️ Starting MariaDB Server..."
         service mariadb start || echo "⚠️ Failed to start MariaDB service."
