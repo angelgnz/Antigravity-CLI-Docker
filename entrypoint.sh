@@ -139,11 +139,13 @@ case "$1" in
                         if [ ! -f ".env" ] && [ -f ".env.example" ]; then
                             echo "   📝 Creando archivo .env..."
                             cp .env.example .env
-                            # Inyectar credenciales de base de datos
-                            sed -i "s/DB_HOST=.*/DB_HOST=127.0.0.1/g" .env
-                            sed -i "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/g" .env
-                            sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/g" .env
-                            sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/g" .env
+                            # Inyectar credenciales de base de datos, descomentando si es necesario
+                            sed -i "s/^[#]*[[:space:]]*DB_CONNECTION=.*/DB_CONNECTION=mysql/g" .env
+                            sed -i "s/^[#]*[[:space:]]*DB_HOST=.*/DB_HOST=127.0.0.1/g" .env
+                            sed -i "s/^[#]*[[:space:]]*DB_PORT=.*/DB_PORT=3306/g" .env
+                            sed -i "s/^[#]*[[:space:]]*DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/g" .env
+                            sed -i "s/^[#]*[[:space:]]*DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/g" .env
+                            sed -i "s/^[#]*[[:space:]]*DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/g" .env
                         fi
                         
                         # Tareas específicas de Laravel
