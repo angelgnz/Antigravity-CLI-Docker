@@ -1,11 +1,12 @@
 {
   "$schema": "https://schema.railpack.com",
-  "packages": {},
+  "packages": {
+    "node": "20"
+  },
   "steps": {
-    "setup-tools": {
+    "install": {
       "commands": [
-        "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
-        "apt-get install -y nodejs",
+        "...",
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
         "ln -sf /app/.bin/agy /usr/local/bin/agy"
@@ -15,7 +16,6 @@
   "deploy": {
     "startCommand": "bash ./entrypoint.sh daemon",
     "variables": {
-      "CLONE_REPOSITORIES": "",
       "TARGET_BRANCH": "antigravity",
       "DB_DATABASE": "laravel",
       "DB_USERNAME": "laravel_user",
