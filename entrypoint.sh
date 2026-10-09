@@ -78,9 +78,25 @@ case "$1" in
             echo ""
         fi
 
+        # Start MariaDB server FIRST so migrations can run
+        echo "🗄️ Starting MariaDB Server..."
+        service mariadb start || echo "⚠️ Failed to start MariaDB service."
+        
+        # Give it a moment to initialize
+        sleep 3
+        
+        # Create database and user
+        echo "🛠️ Configuring Database ${DB_DATABASE} for user ${DB_USERNAME}..."
+        mysql -u root -e "CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;" || true
+        mysql -u root -e "CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'%' IDENTIFIED BY '${DB_PASSWORD}';" || true
+        mysql -u root -e "GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_USERNAME}'@'%';" || true
+        mysql -u root -e "FLUSH PRIVILEGES;" || true
+
         # Auto-clone repositories if defined
         if [ -n "${CLONE_REPOSITORIES:-}" ]; then
             TARGET_BRANCH="${TARGET_BRANCH:-antigravity}"
+            APP_PORT_COUNTER=8000
+            
             echo "📦 Configurando repositorios en /app/workspace (Rama objetivo: $TARGET_BRANCH)..."
             cd /app/workspace
             
@@ -96,36 +112,61 @@ case "$1" in
                         echo "   ⬇️ Clonando $REPO..."
                         gh repo clone "$REPO" "$REPO_NAME" 2>/dev/null || git clone "$REPO" "$REPO_NAME" || echo "   ⚠️ Error al clonar $REPO"
                     else
-                        echo "   ✅ El repositorio $REPO_NAME ya existe, saltando clonación."
+                        echo "   ✅ El repositorio $REPO_NAME ya existe."
                     fi
                     
                     if [ -d "$REPO_NAME" ]; then
-                        echo "   🔄 Configurando rama $TARGET_BRANCH en $REPO_NAME..."
+                        echo "   🔄 Configurando $REPO_NAME..."
                         cd "$REPO_NAME"
                         git config pull.rebase false
                         git fetch --all --prune || true
                         # Intentar moverse a la rama, si no existe, crearla
                         git checkout "$TARGET_BRANCH" 2>/dev/null || git checkout -b "$TARGET_BRANCH"
+                        
+                        # Instalar dependencias PHP
+                        if [ -f "composer.json" ]; then
+                            echo "   📦 Ejecutando composer install..."
+                            composer install --no-interaction || true
+                        fi
+                        
+                        # Instalar dependencias JS
+                        if [ -f "package.json" ]; then
+                            echo "   📦 Ejecutando npm install..."
+                            npm install || true
+                        fi
+                        
+                        # Configurar .env
+                        if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+                            echo "   📝 Creando archivo .env..."
+                            cp .env.example .env
+                            # Inyectar credenciales de base de datos
+                            sed -i "s/DB_HOST=.*/DB_HOST=127.0.0.1/g" .env
+                            sed -i "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/g" .env
+                            sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/g" .env
+                            sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/g" .env
+                        fi
+                        
+                        # Tareas específicas de Laravel
+                        if [ -f "artisan" ]; then
+                            echo "   🔑 Generando APP_KEY..."
+                            php artisan key:generate --force || true
+                            
+                            echo "   🗃️ Ejecutando migraciones y seeders..."
+                            php artisan migrate --seed --force || true
+                            
+                            echo "   🚀 Sirviendo aplicación en el puerto $APP_PORT_COUNTER..."
+                            php artisan serve --host=0.0.0.0 --port=$APP_PORT_COUNTER > /dev/null 2>&1 &
+                        fi
+                        
+                        # Incrementar puerto para el siguiente repo
+                        APP_PORT_COUNTER=$((APP_PORT_COUNTER + 1))
+                        
                         cd ..
                     fi
                 fi
             done
             cd /app
         fi
-
-        # Start MariaDB server
-        echo "🗄️ Starting MariaDB Server..."
-        service mariadb start || echo "⚠️ Failed to start MariaDB service."
-        
-        # Give it a moment to initialize
-        sleep 3
-        
-        # Create database and user
-        echo "🛠️ Configuring Database ${DB_DATABASE} for user ${DB_USERNAME}..."
-        mysql -u root -e "CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;" || true
-        mysql -u root -e "CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'%' IDENTIFIED BY '${DB_PASSWORD}';" || true
-        mysql -u root -e "GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_USERNAME}'@'%';" || true
-        mysql -u root -e "FLUSH PRIVILEGES;" || true
 
         echo "🚀 Iniciando Antigravity CLI Daemon..."
         echo "   Nombre de instancia: $INSTANCE_NAME"
