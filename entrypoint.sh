@@ -133,6 +133,20 @@ case "$1" in
         echo "   Acceso Web:          https://antigravity.google (Remote Control)"
         echo ""
 
+        # Cambiar el directorio de trabajo para que Antigravity inicie en el repositorio
+        cd /app/workspace
+        
+        # Si hay exactamente un repositorio clonado (o una sola carpeta en workspace), entrar en ella
+        # para que sea la raíz directa del agente en Remote Control
+        DIR_COUNT=$(find . -maxdepth 1 -mindepth 1 -type d | wc -l)
+        if [ "$DIR_COUNT" -eq 1 ]; then
+            SINGLE_REPO=$(find . -maxdepth 1 -mindepth 1 -type d | head -n 1)
+            echo "📂 Estableciendo $SINGLE_REPO como directorio raíz de Antigravity..."
+            cd "$SINGLE_REPO"
+        else
+            echo "📂 Estableciendo /app/workspace como directorio raíz de Antigravity..."
+        fi
+
         exec agy --remote-control --hub-port "$HUB_PORT" --remote-control-name "$INSTANCE_NAME" "$@"
         ;;
 
