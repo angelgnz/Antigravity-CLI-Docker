@@ -6,7 +6,7 @@ set -e
 # ==============================================================================
 
 # Add locally installed binaries (agy, gh) to PATH
-export PATH="/app/.bin:$PATH"
+export PATH="/mise/shims:/app/.bin:$PATH"
 
 # Directorio base para persistencia (en Coolify, puedes montar un volumen aquí)
 PERSISTENT_DIR="${PERSISTENT_DIR:-/app/data}"
