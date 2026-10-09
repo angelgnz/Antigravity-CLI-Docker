@@ -78,6 +78,41 @@ case "$1" in
             echo ""
         fi
 
+        # Auto-clone repositories if defined
+        if [ -n "${CLONE_REPOSITORIES:-}" ]; then
+            TARGET_BRANCH="${TARGET_BRANCH:-antigravity}"
+            echo "📦 Configurando repositorios en /app/workspace (Rama objetivo: $TARGET_BRANCH)..."
+            cd /app/workspace
+            
+            # Separar por comas
+            IFS=',' read -r -a REPO_ARRAY <<< "$CLONE_REPOSITORIES"
+            for REPO in "${REPO_ARRAY[@]}"; do
+                # Eliminar espacios en blanco
+                REPO="$(echo -e "${REPO}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                if [ -n "$REPO" ]; then
+                    # Extraer el nombre del repositorio
+                    REPO_NAME=$(basename "$REPO" .git)
+                    if [ ! -d "$REPO_NAME" ]; then
+                        echo "   ⬇️ Clonando $REPO..."
+                        gh repo clone "$REPO" "$REPO_NAME" 2>/dev/null || git clone "$REPO" "$REPO_NAME" || echo "   ⚠️ Error al clonar $REPO"
+                    else
+                        echo "   ✅ El repositorio $REPO_NAME ya existe, saltando clonación."
+                    fi
+                    
+                    if [ -d "$REPO_NAME" ]; then
+                        echo "   🔄 Configurando rama $TARGET_BRANCH en $REPO_NAME..."
+                        cd "$REPO_NAME"
+                        git config pull.rebase false
+                        git fetch --all --prune || true
+                        # Intentar moverse a la rama, si no existe, crearla
+                        git checkout "$TARGET_BRANCH" 2>/dev/null || git checkout -b "$TARGET_BRANCH"
+                        cd ..
+                    fi
+                fi
+            done
+            cd /app
+        fi
+
         # Start MariaDB server
         echo "🗄️ Starting MariaDB Server..."
         service mariadb start || echo "⚠️ Failed to start MariaDB service."

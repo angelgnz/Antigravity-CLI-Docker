@@ -39,6 +39,8 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 **Variables de Entorno:**
 - `INSTANCE_NAME`: Nombre descriptivo (ej. `mi-coolify-agy`).
 - `GH_TOKEN`: (Opcional) Tu Personal Access Token de GitHub.
+- `CLONE_REPOSITORIES`: Lista separada por comas de repositorios a clonar automáticamente (ej. `tu-usuario/repo1, https://github.com/tu-usuario/repo2.git`).
+- `TARGET_BRANCH`: Rama a la que cambiar o crear al clonar (por defecto `antigravity`).
 - `DB_DATABASE`: Nombre de la base de datos a crear (por defecto `laravel`).
 - `DB_USERNAME`: Usuario de la base de datos (por defecto `laravel_user`).
 - `DB_PASSWORD`: Contraseña del usuario (por defecto `secret`).
