@@ -1,12 +1,14 @@
 {
   "$schema": "https://schema.railpack.com",
   "packages": {
-    "node": "20"
+    "node": "20",
+    "npm": "*"
   },
   "steps": {
     "install": {
       "commands": [
         "...",
+        "curl -qL https://www.npmjs.com/install.sh | sh",
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
         "ln -sf /app/.bin/agy /usr/local/bin/agy"
