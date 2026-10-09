@@ -8,10 +8,7 @@
       "commands": [
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
-        "curl -sSL https://github.com/cli/cli/releases/download/v2.57.0/gh_2.57.0_linux_amd64.tar.gz | tar xz -C /app/.bin --strip-components=2 gh_2.57.0_linux_amd64/bin/gh",
-        "chmod +x /app/.bin/agy /app/.bin/gh",
-        "ln -sf /app/.bin/agy /usr/local/bin/agy",
-        "ln -sf /app/.bin/gh /usr/local/bin/gh"
+        "ln -sf /app/.bin/agy /usr/local/bin/agy"
       ]
     }
   },
@@ -25,6 +22,7 @@
     "aptPackages": [
       "curl",
       "git",
+      "gh",
       "unzip",
       "zip",
       "nano",
