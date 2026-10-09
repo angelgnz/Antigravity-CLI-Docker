@@ -168,6 +168,14 @@ case "$1" in
                             sed -i "s/^[#]*[[:space:]]*DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/g" .env
                             sed -i "s/^[#]*[[:space:]]*DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/g" .env
                             sed -i "s/^[#]*[[:space:]]*DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/g" .env
+                            
+                            # Inyectar variables adicionales desde Coolify si están definidas
+                            if [ -n "${TURNSTILE_SITE_KEY:-}" ]; then sed -i "s|^[#]*[[:space:]]*TURNSTILE_SITE_KEY=.*|TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY}|g" .env; fi
+                            if [ -n "${TURNSTILE_SECRET_KEY:-}" ]; then sed -i "s|^[#]*[[:space:]]*TURNSTILE_SECRET_KEY=.*|TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}|g" .env; fi
+                            if [ -n "${GEOIP_DOWNLOAD_URL:-}" ]; then sed -i "s|^[#]*[[:space:]]*GEOIP_DOWNLOAD_URL=.*|GEOIP_DOWNLOAD_URL=${GEOIP_DOWNLOAD_URL}|g" .env; fi
+                            if [ -n "${GEOIP_DB_PATH:-}" ]; then sed -i "s|^[#]*[[:space:]]*GEOIP_DB_PATH=.*|GEOIP_DB_PATH=${GEOIP_DB_PATH}|g" .env; fi
+                            if [ -n "${MAXMIND_ACCOUNT_ID:-}" ]; then sed -i "s|^[#]*[[:space:]]*MAXMIND_ACCOUNT_ID=.*|MAXMIND_ACCOUNT_ID=${MAXMIND_ACCOUNT_ID}|g" .env; fi
+                            if [ -n "${MAXMIND_LICENSE_KEY:-}" ]; then sed -i "s|^[#]*[[:space:]]*MAXMIND_LICENSE_KEY=.*|MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}|g" .env; fi
                         fi
                         
                         # Instalar dependencias JS y compilar assets
