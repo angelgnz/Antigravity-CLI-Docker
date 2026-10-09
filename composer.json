@@ -3,7 +3,13 @@
     "description": "Antigravity CLI Daemon for Coolify",
     "type": "project",
     "require": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "ext-pdo_mysql": "*",
+        "ext-zip": "*",
+        "ext-redis": "*",
+        "ext-gd": "*",
+        "ext-intl": "*",
+        "ext-exif": "*"
     },
     "config": {
         "optimize-autoloader": true,
