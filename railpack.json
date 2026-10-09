@@ -1,13 +1,11 @@
 {
   "$schema": "https://schema.railpack.com",
-  "packages": {
-    "node": "20"
-  },
   "steps": {
     "install": {
       "commands": [
         "...",
-        "curl -qL https://www.npmjs.com/install.sh | sh",
+        "curl -fsSLO https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz",
+        "tar -xzf node-v20.18.0-linux-x64.tar.gz -C /usr/local --strip-components=1",
         "mkdir -p /app/.bin",
         "curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /app/.bin",
         "ln -sf /app/.bin/agy /usr/local/bin/agy"
@@ -31,7 +29,6 @@
       "nano",
       "tmux",
       "sqlite3",
-      "npm",
       "mariadb-server"
     ]
   }
