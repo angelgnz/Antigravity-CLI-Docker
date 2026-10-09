@@ -2,15 +2,25 @@
 set -e
 
 # ==============================================================================
-# Antigravity CLI Remote-Control Entrypoint
+# Antigravity CLI Remote-Control Entrypoint (Coolify / Railpack)
 # ==============================================================================
 
-TOKEN_FILE="${HOME}/.gemini/jetski-standalone-oauth-token"
+# Add locally installed binaries (agy, gh) to PATH
+export PATH="/app/.bin:$PATH"
+
+# Directorio base para persistencia (en Coolify, puedes montar un volumen aquí)
+PERSISTENT_DIR="${PERSISTENT_DIR:-/app/data}"
+
+TOKEN_FILE="${PERSISTENT_DIR}/.gemini/jetski-standalone-oauth-token"
 HUB_PORT="${HUB_PORT:-4400}"
-INSTANCE_NAME="${INSTANCE_NAME:-vps-antigravity}"
+INSTANCE_NAME="${INSTANCE_NAME:-coolify-antigravity}"
 
 # Ensure directories have proper permissions
-mkdir -p "${HOME}/.gemini" "${HOME}/.antigravity" "${HOME}/.config/gh" "${HOME}/.composer" /workspace
+mkdir -p "${PERSISTENT_DIR}/.gemini" "${PERSISTENT_DIR}/.antigravity" "${PERSISTENT_DIR}/.config/gh" "${PERSISTENT_DIR}/.composer" /app/workspace
+
+# Set environment variables for tools to use the persistent directory
+export HOME="${PERSISTENT_DIR}"
+export COMPOSER_HOME="${PERSISTENT_DIR}/.composer"
 
 # 1. Setup GitHub CLI authentication if token is provided
 if [ -n "${GH_TOKEN:-}" ]; then
@@ -58,11 +68,11 @@ case "$1" in
             echo " No se encontró el token de autenticación en:"
             echo " $TOKEN_FILE"
             echo ""
-            echo " Para iniciar sesión por primera vez desde tu VPS, ejecuta:"
-            echo "   docker compose run --rm antigravity-daemon login"
+            echo " Para iniciar sesión, abre la terminal del contenedor en Coolify y ejecuta:"
+            echo "   bash ./entrypoint.sh login"
             echo ""
-            echo " O si ya tienes Antigravity configurado en tu máquina local, copia tus"
-            echo " credenciales desde ~/.gemini a este volumen persistente."
+            echo " O si ya tienes Antigravity configurado, pega tus credenciales en el"
+            echo " volumen persistente ($PERSISTENT_DIR/.gemini)."
             echo "======================================================================"
             echo ""
         fi
@@ -77,7 +87,7 @@ case "$1" in
         ;;
 
     *)
-        # If user passed custom flags or commands (e.g. bash, composer, php, agy)
+        # If user passed custom flags or commands
         exec "$@"
         ;;
 esac

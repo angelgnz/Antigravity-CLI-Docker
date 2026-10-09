@@ -1,0 +1,15 @@
+{
+    "name": "antigravity/coolify-daemon",
+    "description": "Antigravity CLI Daemon for Coolify",
+    "type": "project",
+    "require": {
+        "php": "^8.4"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
