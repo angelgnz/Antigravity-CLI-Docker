@@ -129,13 +129,7 @@ case "$1" in
                             composer install --no-interaction || true
                         fi
                         
-                        # Instalar dependencias JS
-                        if [ -f "package.json" ]; then
-                            echo "   📦 Ejecutando npm install..."
-                            npm install || true
-                        fi
-                        
-                        # Configurar .env
+                        # Configurar .env ANTES de compilar JS (por si requiere variables VITE_)
                         if [ ! -f ".env" ] && [ -f ".env.example" ]; then
                             echo "   📝 Creando archivo .env..."
                             cp .env.example .env
@@ -146,6 +140,14 @@ case "$1" in
                             sed -i "s/^[#]*[[:space:]]*DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/g" .env
                             sed -i "s/^[#]*[[:space:]]*DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/g" .env
                             sed -i "s/^[#]*[[:space:]]*DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/g" .env
+                        fi
+                        
+                        # Instalar dependencias JS y compilar assets
+                        if [ -f "package.json" ]; then
+                            echo "   📦 Ejecutando npm install..."
+                            npm install || true
+                            echo "   🏗️ Compilando assets (npm run build)..."
+                            npm run build || true
                         fi
                         
                         # Tareas específicas de Laravel
