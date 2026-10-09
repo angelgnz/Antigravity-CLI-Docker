@@ -126,7 +126,11 @@ case "$1" in
                         # Instalar dependencias PHP
                         if [ -f "composer.json" ]; then
                             echo "   📦 Ejecutando composer install..."
-                            composer install --no-interaction || true
+                            if composer install --no-interaction; then
+                                echo "   ✅ composer install exitoso."
+                            else
+                                echo "   ❌ Error en composer install."
+                            fi
                         fi
                         
                         # Configurar .env ANTES de compilar JS (por si requiere variables VITE_)
@@ -145,18 +149,35 @@ case "$1" in
                         # Instalar dependencias JS y compilar assets
                         if [ -f "package.json" ]; then
                             echo "   📦 Ejecutando npm install..."
-                            npm install || true
+                            if npm install --include=dev; then
+                                echo "   ✅ npm install exitoso."
+                            else
+                                echo "   ❌ Error en npm install."
+                            fi
+                            
                             echo "   🏗️ Compilando assets (npm run build)..."
-                            npm run build || true
+                            if npm run build; then
+                                echo "   ✅ assets compilados exitosamente."
+                            else
+                                echo "   ❌ Error en npm run build."
+                            fi
                         fi
                         
                         # Tareas específicas de Laravel
                         if [ -f "artisan" ]; then
                             echo "   🔑 Generando APP_KEY..."
-                            php artisan key:generate --force || true
+                            if php artisan key:generate --force; then
+                                echo "   ✅ APP_KEY generada."
+                            else
+                                echo "   ❌ Error generando APP_KEY."
+                            fi
                             
                             echo "   🗃️ Ejecutando migraciones y seeders..."
-                            php artisan migrate --seed --force || true
+                            if php artisan migrate --seed --force; then
+                                echo "   ✅ Migraciones y seeders exitosos."
+                            else
+                                echo "   ❌ Error en migraciones o seeders."
+                            fi
                             
                             echo "   🚀 Sirviendo aplicación en el puerto $APP_PORT_COUNTER..."
                             php artisan serve --host=0.0.0.0 --port=$APP_PORT_COUNTER > /dev/null 2>&1 &
