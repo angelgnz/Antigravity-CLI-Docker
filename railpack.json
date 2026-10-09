@@ -15,7 +15,7 @@
   "deploy": {
     "startCommand": "bash ./entrypoint.sh daemon",
     "variables": {
-      "CLONE_REPOSITORIES": "usuario/mi-repo, https://github.com/otro/repo.git",
+      "CLONE_REPOSITORIES": "",
       "TARGET_BRANCH": "antigravity",
       "DB_DATABASE": "laravel",
       "DB_USERNAME": "laravel_user",
