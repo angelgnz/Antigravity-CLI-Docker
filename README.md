@@ -11,8 +11,18 @@ Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas neces
 - 🤖 **Google Antigravity CLI (`agy`)**: Instalado automáticamente en el entorno y configurado para conectarse al panel de **Remote Control**.
 - 🚀 **Despliegue con Railpack**: Configuración nativa `railpack.json` para despliegues instantáneos y sin Dockerfile en Coolify.
 - 🐘 **PHP 8.4**: Versión forzada mediante `composer.json` y `railpack.json`.
+- 🗄️ **MariaDB Integrado**: Servidor de BD interno configurado de manera automática en cada despliegue.
 - 🐙 **GitHub CLI (`gh`)**: Incluido para operaciones de Git automatizadas o asistidas por el agente.
 - 📦 **Node.js 20**: Listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
+
+---
+
+## 🗄️ Base de Datos Integrada (MariaDB)
+
+Este entorno cuenta con un servidor de **MariaDB** instalado internamente, diseñado para facilitar el desarrollo y pruebas:
+- Arranca automáticamente en el contenedor sin necesidad de servicios adicionales.
+- Crea automáticamente la base de datos y usuario al iniciar el daemon tomando los valores de las variables de entorno `DB_DATABASE`, `DB_USERNAME`, y `DB_PASSWORD`.
+- **Importante:** La base de datos es efímera, por lo que **se vaciará en cada despliegue**. Esto es ideal para flujos de trabajo donde se ejecuten comandos como `php artisan migrate --seed` en cada iteración del despliegue.
 
 ---
 
@@ -29,7 +39,9 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 **Variables de Entorno:**
 - `INSTANCE_NAME`: Nombre descriptivo (ej. `mi-coolify-agy`).
 - `GH_TOKEN`: (Opcional) Tu Personal Access Token de GitHub.
-- `DB_*`: Variables de base de datos si decides adjuntar un servicio de BD en Coolify.
+- `DB_DATABASE`: Nombre de la base de datos a crear (por defecto `laravel`).
+- `DB_USERNAME`: Usuario de la base de datos (por defecto `laravel_user`).
+- `DB_PASSWORD`: Contraseña del usuario (por defecto `secret`).
 
 **Almacenamiento Persistente (Storage):**
 Para que tu sesión de Google y el caché no se pierdan al redesplegar, añade un volumen persistente:

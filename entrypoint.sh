@@ -33,7 +33,7 @@ fi
 
 # 2. Export Database variables so Laravel and scripts pick them up
 export DB_CONNECTION="${DB_CONNECTION:-mysql}"
-export DB_HOST="${DB_HOST:-db}"
+export DB_HOST="${DB_HOST:-127.0.0.1}"
 export DB_PORT="${DB_PORT:-3306}"
 export DB_DATABASE="${DB_DATABASE:-laravel}"
 export DB_USERNAME="${DB_USERNAME:-laravel_user}"
@@ -76,6 +76,20 @@ case "$1" in
             echo "======================================================================"
             echo ""
         fi
+
+        # Start MariaDB server
+        echo "🗄️ Starting MariaDB Server..."
+        service mariadb start || echo "⚠️ Failed to start MariaDB service."
+        
+        # Give it a moment to initialize
+        sleep 3
+        
+        # Create database and user
+        echo "🛠️ Configuring Database ${DB_DATABASE} for user ${DB_USERNAME}..."
+        mysql -u root -e "CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;" || true
+        mysql -u root -e "CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'%' IDENTIFIED BY '${DB_PASSWORD}';" || true
+        mysql -u root -e "GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_USERNAME}'@'%';" || true
+        mysql -u root -e "FLUSH PRIVILEGES;" || true
 
         echo "🚀 Iniciando Antigravity CLI Daemon..."
         echo "   Nombre de instancia: $INSTANCE_NAME"

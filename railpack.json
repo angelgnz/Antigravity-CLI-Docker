@@ -16,6 +16,11 @@
   },
   "deploy": {
     "startCommand": "bash ./entrypoint.sh daemon",
+    "variables": {
+      "DB_DATABASE": "laravel",
+      "DB_USERNAME": "laravel_user",
+      "DB_PASSWORD": "secret"
+    },
     "aptPackages": [
       "curl",
       "git",
@@ -23,7 +28,8 @@
       "zip",
       "nano",
       "tmux",
-      "sqlite3"
+      "sqlite3",
+      "mariadb-server"
     ]
   }
 }
