@@ -51,7 +51,8 @@ case "$1" in
         echo "3. Si se solicita un código, pégalo en esta terminal."
         echo "======================================================================"
         echo ""
-        exec agy --remote-control --hub-port "$HUB_PORT" --remote-control-name "$INSTANCE_NAME"
+        # Usamos un puerto diferente (HUB_PORT + 1) para no colisionar con el daemon principal
+        exec agy --remote-control --hub-port "$((HUB_PORT + 1))" --remote-control-name "$INSTANCE_NAME"
         ;;
 
     status)
