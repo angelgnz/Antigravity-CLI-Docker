@@ -38,7 +38,7 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 
 **Variables de Entorno:**
 - `INSTANCE_NAME`: Nombre descriptivo (ej. `mi-coolify-agy`).
-- `GH_TOKEN`: (Opcional) Tu Personal Access Token de GitHub.
+- `GH_TOKEN`: (Opcional) Tu Personal Access Token (Classic) de GitHub. Puedes crearlo directamente con los permisos necesarios preseleccionados desde este enlace: **[👉 Crear Token de GitHub preconfigurado](https://github.com/settings/tokens/new?description=Antigravity+CLI+Daemon&scopes=repo,read:org,workflow)** (incluye `repo` para repositorios privados, `read:org` para organizaciones y `workflow` para flujos de CI/CD).
 - `CLONE_REPOSITORIES`: Lista separada por comas de repositorios a clonar automáticamente (ej. `tu-usuario/repo1, https://github.com/tu-usuario/repo2.git`).
 - `TARGET_BRANCH`: Rama a la que cambiar o crear al clonar (por defecto `antigravity`).
 - `DB_DATABASE`: Nombre de la base de datos a crear (por defecto `laravel`).
