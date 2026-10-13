@@ -44,6 +44,9 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 - `DB_DATABASE`: Nombre de la base de datos a crear (por defecto `laravel`).
 - `DB_USERNAME`: Usuario de la base de datos (por defecto `laravel_user`).
 - `DB_PASSWORD`: Contraseña del usuario (por defecto `secret`).
+- `AUTO_APPROVE`: (Opcional) Define `true` para auto-aprobar tanto herramientas como cambios de código sin confirmación interactiva.
+- `TOOL_PERMISSION`: (Opcional) Control granular para herramientas y comandos de terminal (`"always-proceed"`, `"request-review"`, `"proceed-in-sandbox"`, `"strict"`).
+- `ARTIFACT_REVIEW_POLICY`: (Opcional) Control granular para revisión de código y artefactos (`"always-proceed"`, `"asks-for-review"`, `"agent-decides"`). Si no se define ninguna, se mantiene el comportamiento por defecto de Antigravity.
 
 **Almacenamiento Persistente (Storage):**
 Para que tu sesión de Google y el caché no se pierdan al redesplegar, añade un volumen persistente:

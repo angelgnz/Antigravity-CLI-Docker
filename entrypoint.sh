@@ -251,7 +251,66 @@ case "$1" in
             echo "📂 Estableciendo /app/workspace como directorio raíz de Antigravity..."
         fi
 
-        exec agy --remote-control --hub-port "$HUB_PORT" --remote-control-name "$INSTANCE_NAME" "$@"
+        # Configuración granular de permisos y políticas de revisión
+        RESOLVED_TOOL_PERMISSION="${TOOL_PERMISSION:-}"
+        RESOLVED_ARTIFACT_POLICY="${ARTIFACT_REVIEW_POLICY:-}"
+
+        if [ -n "${AUTO_APPROVE:-}" ]; then
+            if [ "$AUTO_APPROVE" = "true" ] || [ "$AUTO_APPROVE" = "1" ]; then
+                RESOLVED_TOOL_PERMISSION="${RESOLVED_TOOL_PERMISSION:-always-proceed}"
+                RESOLVED_ARTIFACT_POLICY="${RESOLVED_ARTIFACT_POLICY:-always-proceed}"
+            elif [ "$AUTO_APPROVE" = "false" ] || [ "$AUTO_APPROVE" = "0" ]; then
+                RESOLVED_TOOL_PERMISSION="${RESOLVED_TOOL_PERMISSION:-request-review}"
+                RESOLVED_ARTIFACT_POLICY="${RESOLVED_ARTIFACT_POLICY:-asks-for-review}"
+            fi
+        fi
+
+        # Normalizar booleanos a las opciones soportadas por Antigravity
+        case "$RESOLVED_TOOL_PERMISSION" in
+            true|1)  RESOLVED_TOOL_PERMISSION="always-proceed" ;;
+            false|0) RESOLVED_TOOL_PERMISSION="request-review" ;;
+        esac
+
+        case "$RESOLVED_ARTIFACT_POLICY" in
+            true|1)  RESOLVED_ARTIFACT_POLICY="always-proceed" ;;
+            false|0) RESOLVED_ARTIFACT_POLICY="asks-for-review" ;;
+        esac
+
+        EXTRA_ARGS=()
+        if [ -n "$RESOLVED_TOOL_PERMISSION" ] || [ -n "$RESOLVED_ARTIFACT_POLICY" ]; then
+            echo "⚙️ Configurando políticas de permisos de Antigravity:"
+            if [ -n "$RESOLVED_TOOL_PERMISSION" ]; then
+                echo "   - toolPermission: $RESOLVED_TOOL_PERMISSION"
+                if [ "$RESOLVED_TOOL_PERMISSION" = "always-proceed" ]; then
+                    EXTRA_ARGS+=(--dangerously-skip-permissions)
+                fi
+            fi
+            if [ -n "$RESOLVED_ARTIFACT_POLICY" ]; then
+                echo "   - artifactReviewPolicy: $RESOLVED_ARTIFACT_POLICY"
+            fi
+
+            SETTINGS_DIR="${PERSISTENT_DIR}/.gemini/antigravity-cli"
+            SETTINGS_FILE="${SETTINGS_DIR}/settings.json"
+            mkdir -p "$SETTINGS_DIR"
+
+            node -e '
+            const fs = require("fs");
+            const file = process.argv[1];
+            const toolPermission = process.argv[2];
+            const artifactPolicy = process.argv[3];
+            let data = {};
+            try {
+                data = JSON.parse(fs.readFileSync(file, "utf8"));
+            } catch (e) {}
+            if (toolPermission) data.toolPermission = toolPermission;
+            if (artifactPolicy) data.artifactReviewPolicy = artifactPolicy;
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
+            ' "$SETTINGS_FILE" "$RESOLVED_TOOL_PERMISSION" "$RESOLVED_ARTIFACT_POLICY" 2>/dev/null || true
+        else
+            echo "🛡️ Modo de permisos: Comportamiento por defecto de Antigravity (sin variables definidas)"
+        fi
+
+        exec agy --remote-control --hub-port "$HUB_PORT" --remote-control-name "$INSTANCE_NAME" "${EXTRA_ARGS[@]}" "$@"
         ;;
 
     *)
