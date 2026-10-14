@@ -203,19 +203,30 @@ case "$1" in
                         
                         # Tareas específicas de Laravel
                         if [ -f "artisan" ]; then
-                            echo "   🔑 Generando APP_KEY..."
-                            if php artisan key:generate --force; then
-                                echo "   ✅ APP_KEY generada."
-                            else
-                                echo "   ❌ Error generando APP_KEY."
+                            echo "   🔑 Verificando APP_KEY..."
+                            if ! grep -E -q '^APP_KEY=[a-zA-Z0-9]' .env 2>/dev/null; then
+                                php artisan key:generate --force || true
                             fi
                             
-                            echo "   🗃️ Ejecutando migraciones y seeders..."
-                            if php artisan migrate --seed --force; then
-                                echo "   ✅ Migraciones y seeders exitosos."
-                            else
-                                echo "   ❌ Error en migraciones o seeders."
-                            fi
+                            echo "   🧹 Limpiando cachés previas..."
+                            php artisan optimize:clear || true
+
+                            # 4. Publicar assets de Filament (ANTES de cualquier caché)
+                            echo "   🎨 Publicando assets de Filament..."
+                            php artisan filament:assets || true
+
+                            # 5. Base de datos y Storage
+                            echo "   🗃️ Base de datos y Storage..."
+                            php artisan migrate --force || true
+                            php artisan storage:link --force || true
+
+                            # 6. Caché y optimizaciones de producción
+                            echo "   ⚡ Optimizando configuración, rutas, vistas y eventos..."
+                            php artisan config:cache || true
+                            php artisan route:cache || true
+                            php artisan view:cache || true
+                            php artisan event:cache || true
+                            php artisan filament:optimize || true
                             
                             echo "   🚀 Sirviendo aplicación en el puerto $APP_PORT_COUNTER..."
                             php artisan serve --host=0.0.0.0 --port=$APP_PORT_COUNTER > /dev/null 2>&1 &
