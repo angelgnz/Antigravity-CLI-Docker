@@ -22,7 +22,7 @@ Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas neces
 Este entorno cuenta con un servidor de **MariaDB** instalado internamente, diseñado para facilitar el desarrollo y pruebas:
 - Arranca automáticamente en el contenedor sin necesidad de servicios adicionales.
 - Crea automáticamente la base de datos y usuario al iniciar el daemon tomando los valores de las variables de entorno `DB_DATABASE`, `DB_USERNAME`, y `DB_PASSWORD`.
-- **Importante:** La base de datos es efímera, por lo que **se vaciará en cada despliegue**. Esto es ideal para flujos de trabajo donde se ejecuten comandos como `php artisan migrate --seed` en cada iteración del despliegue.
+- **Comportamiento por defecto:** Se ejecuta `php artisan migrate:fresh --seed` en cada inicio (`DB_FRESH_SEED=true`), ideal para entornos de desarrollo. Si deseas preservar datos y correr únicamente migraciones pendientes, establece `DB_FRESH_SEED=false`.
 
 ---
 
@@ -44,6 +44,7 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 - `DB_DATABASE`: Nombre de la base de datos a crear (por defecto `laravel`).
 - `DB_USERNAME`: Usuario de la base de datos (por defecto `laravel_user`).
 - `DB_PASSWORD`: Contraseña del usuario (por defecto `secret`).
+- `DB_FRESH_SEED`: (Opcional) Recrear BD y correr seeders (`migrate:fresh --seed`) en cada arranque (por defecto `true`). Define `false` para solo correr `migrate --force`.
 - `AUTO_APPROVE`: (Opcional) Define `true` para auto-aprobar tanto herramientas como cambios de código sin confirmación interactiva.
 - `TOOL_PERMISSION`: (Opcional) Control granular para herramientas y comandos de terminal (`"always-proceed"`, `"request-review"`, `"proceed-in-sandbox"`, `"strict"`).
 - `ARTIFACT_REVIEW_POLICY`: (Opcional) Control granular para revisión de código y artefactos (`"always-proceed"`, `"asks-for-review"`, `"agent-decides"`). Si no se define ninguna, se mantiene el comportamiento por defecto de Antigravity.

@@ -38,6 +38,7 @@ export DB_PORT="${DB_PORT:-3306}"
 export DB_DATABASE="${DB_DATABASE:-laravel}"
 export DB_USERNAME="${DB_USERNAME:-laravel_user}"
 export DB_PASSWORD="${DB_PASSWORD:-secret}"
+export DB_FRESH_SEED="${DB_FRESH_SEED:-true}"
 
 # 3. Command execution routing
 case "$1" in
@@ -217,7 +218,13 @@ case "$1" in
 
                             # 5. Base de datos y Storage
                             echo "   🗃️ Base de datos y Storage..."
-                            php artisan migrate --force || true
+                            if [ "${DB_FRESH_SEED:-true}" = "true" ] || [ "${DB_FRESH_SEED:-true}" = "1" ]; then
+                                echo "   🌱 Recreando base de datos y ejecutando seeders (migrate:fresh --seed)..."
+                                php artisan migrate:fresh --seed --force || true
+                            else
+                                echo "   📦 Ejecutando migraciones pendientes (migrate)..."
+                                php artisan migrate --force || true
+                            fi
                             php artisan storage:link --force || true
 
                             # 6. Caché y optimizaciones de producción
