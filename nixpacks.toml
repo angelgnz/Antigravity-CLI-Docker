@@ -3,7 +3,7 @@
   node = true
 
 [phases.setup]
-  nixPkgs = ["php84", "php84Packages.composer", "nodejs_20", "git", "gh", "unzip", "zip", "nano", "tmux", "sqlite", "mariadb"]
+  nixPkgs = ["php84", "php84Packages.composer", "nodejs_20", "git", "gh", "unzip", "zip", "nano", "tmux", "sqlite", "mariadb", "python3"]
 
 [phases.install]
   cmds = [

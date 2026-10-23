@@ -10,10 +10,39 @@ Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas neces
 
 - 🤖 **Google Antigravity CLI (`agy`)**: Instalado automáticamente en el entorno y configurado para conectarse al panel de **Remote Control**.
 - 🚀 **Despliegue con Railpack**: Configuración nativa `railpack.json` para despliegues instantáneos y sin Dockerfile en Coolify.
-- 🐘 **PHP 8.4**: Versión detectada e instalada nativamente por Railpack (basado en `composer.json`).
+- 🐘 **PHP 8.4 + FrankenPHP (Caddy)**: Servidor de aplicaciones multihilo nativo con resolución dinámica de proyectos por subdominio en el puerto `8000`.
+- 🧩 **Hook por Repositorio (`.agy-init.sh`)**: Soporte para scripts de inicialización personalizados dentro de cada proyecto clonado sin modificar el contenedor base.
 - 🗄️ **MariaDB Integrado**: Servidor de BD interno configurado de manera automática en cada despliegue.
 - 🐙 **GitHub CLI (`gh`)**: Incluido para operaciones de Git automatizadas o asistidas por el agente.
-- 📦 **Node.js 20**: Listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
+- 📦 **Node.js 24 (vía NVM)**: Listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
+
+---
+
+## 🌐 Servidor Web Dinámico (FrankenPHP / Caddy)
+
+En lugar de ejecutar múltiples procesos `php artisan serve`, el contenedor levanta una única instancia de **FrankenPHP (Caddy)** en el puerto `8000` (`APP_PORT`) que resuelve dinámicamente el `DocumentRoot` según el subdominio:
+
+- Petición a `https://sirio.tudominio.com` ➔ sirve `/app/workspace/sirio/public`
+- Petición a `https://otro-repo.tudominio.com` ➔ sirve `/app/workspace/otro-repo/public`
+- Acceso directo sin subdominio o por IP (`http://localhost:8000`) ➔ usa como *fallback* el primer repositorio clonado.
+- Si el nombre del repositorio en GitHub contiene mayúsculas (ej. `Usuario/Sirio`), el `entrypoint.sh` crea automáticamente un enlace simbólico en minúsculas (`/app/workspace/sirio`) para que coincida siempre con el subdominio HTTP.
+
+En **Coolify**, basta con apuntar tus subdominios (o un dominio comodín `*.tudominio.com`) al puerto `8000` del contenedor (por ejemplo: `https://sirio.tudominio.com:8000`).
+
+---
+
+## 🧩 Hook Opcional por Repositorio (`.agy-init.sh`)
+
+Si un proyecto específico requiere tareas de aprovisionamiento adicionales (descargar bases de datos GeoIP, publicar assets especiales, crear enlaces simbólicos propios o inyectar configuraciones en `.env`), puedes incluir un archivo `.agy-init.sh` en la raíz de ese repositorio:
+
+```bash
+#!/bin/bash
+# Ejemplo: /app/workspace/sirio/.agy-init.sh
+echo "Configurando recursos específicos del proyecto..."
+php artisan vendor:publish --tag=mis-assets --force
+```
+
+Durante el arranque, `entrypoint.sh` detectará y ejecutará automáticamente `.agy-init.sh` después de las migraciones y `storage:link`, pero **antes** de generar las cachés de Laravel (`config:cache`, `route:cache`, `view:cache`, `filament:optimize`), asegurando que cualquier ajuste quede incluido en la optimización final.
 
 ---
 

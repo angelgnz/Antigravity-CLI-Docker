@@ -1,0 +1,23 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+:{$APP_PORT:8000} {
+	# Fallback al primer repositorio clonado (para accesos por IP o localhost sin subdominio)
+	root * {$DEFAULT_DOCUMENT_ROOT:/app/workspace/default/public}
+
+	# Extraer el primer segmento del subdominio (ej. "sirio.tudominio.com" -> "sirio")
+	# Ignora direcciones IPv4 puras (ej. 127.0.0.1) y localhost sin punto
+	@subproject header_regexp project Host ^([a-zA-Z0-9_-]*[a-zA-Z_-][a-zA-Z0-9_-]*)\.
+	root @subproject /app/workspace/{re.project.1}/public
+
+	encode zstd br gzip
+
+	php_server
+}

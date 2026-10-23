@@ -120,7 +120,6 @@ case "$1" in
         # Auto-clone repositories if defined
         if [ -n "${CLONE_REPOSITORIES:-}" ]; then
             TARGET_BRANCH="${TARGET_BRANCH:-antigravity}"
-            APP_PORT_COUNTER=8000
             
             echo "📦 Configurando repositorios en /app/workspace (Rama objetivo: $TARGET_BRANCH)..."
             cd /app/workspace
@@ -141,8 +140,15 @@ case "$1" in
                     fi
                     
                     if [ -d "$REPO_NAME" ]; then
+                        # Si el nombre del repo tiene mayúsculas (ej. Sirio), crear symlink en minúsculas (sirio)
+                        # para que coincida siempre con el subdominio HTTP (que los navegadores envían en minúsculas)
+                        REPO_LOWER="${REPO_NAME,,}"
+                        if [ "$REPO_NAME" != "$REPO_LOWER" ] && [ ! -e "/app/workspace/$REPO_LOWER" ]; then
+                            ln -sfn "/app/workspace/$REPO_NAME" "/app/workspace/$REPO_LOWER"
+                        fi
+
                         echo "   🔄 Configurando $REPO_NAME..."
-                        cd "$REPO_NAME"
+                        cd "/app/workspace/$REPO_NAME"
                         git config pull.rebase false
                         git fetch --all --prune || true
                         # Intentar moverse a la rama, si no existe, crearla
@@ -227,26 +233,72 @@ case "$1" in
                             fi
                             php artisan storage:link --force || true
 
-                            # 6. Caché y optimizaciones de producción
+                            # 6. Hook opcional por repositorio (.agy-init.sh) ANTES de cachear configuración
+                            if [ -f "/app/workspace/$REPO_NAME/.agy-init.sh" ]; then
+                                echo "   🧩 Ejecutando configuración específica (.agy-init.sh) para $REPO_NAME..."
+                                if bash "/app/workspace/$REPO_NAME/.agy-init.sh"; then
+                                    echo "   ✅ .agy-init.sh ejecutado correctamente."
+                                else
+                                    echo "   ⚠️ Error al ejecutar .agy-init.sh en $REPO_NAME (continuando el arranque)."
+                                fi
+                            fi
+
+                            # 7. Caché y optimizaciones de producción
                             echo "   ⚡ Optimizando configuración, rutas, vistas y eventos..."
                             php artisan config:cache || true
                             php artisan route:cache || true
                             php artisan view:cache || true
                             php artisan event:cache || true
                             php artisan filament:optimize || true
-                            
-                            echo "   🚀 Sirviendo aplicación en el puerto $APP_PORT_COUNTER..."
-                            php artisan serve --host=0.0.0.0 --port=$APP_PORT_COUNTER > /dev/null 2>&1 &
+                        elif [ -f "/app/workspace/$REPO_NAME/.agy-init.sh" ]; then
+                            # Ejecutar hook opcional también si el repositorio no es Laravel
+                            echo "   🧩 Ejecutando configuración específica (.agy-init.sh) para $REPO_NAME..."
+                            if bash "/app/workspace/$REPO_NAME/.agy-init.sh"; then
+                                echo "   ✅ .agy-init.sh ejecutado correctamente."
+                            else
+                                echo "   ⚠️ Error al ejecutar .agy-init.sh en $REPO_NAME (continuando el arranque)."
+                            fi
+                        fi
+
+                        # Definir el primer repositorio con carpeta public como fallback por defecto
+                        if [ -z "${DEFAULT_DOCUMENT_ROOT:-}" ] && [ -d "/app/workspace/$REPO_NAME/public" ]; then
+                            export DEFAULT_DOCUMENT_ROOT="/app/workspace/$REPO_NAME/public"
                         fi
                         
-                        # Incrementar puerto para el siguiente repo
-                        APP_PORT_COUNTER=$((APP_PORT_COUNTER + 1))
-                        
-                        cd ..
+                        cd /app/workspace
                     fi
                 fi
             done
             cd /app
+        fi
+
+        # Si no se definió DEFAULT_DOCUMENT_ROOT (ej. repositorios previos en volumen), detectar el primero con /public
+        if [ -z "${DEFAULT_DOCUMENT_ROOT:-}" ]; then
+            FIRST_PUBLIC_DIR=$(find /app/workspace -maxdepth 2 -mindepth 2 -type d -name "public" 2>/dev/null | head -n 1 || true)
+            if [ -n "$FIRST_PUBLIC_DIR" ]; then
+                export DEFAULT_DOCUMENT_ROOT="$FIRST_PUBLIC_DIR"
+            else
+                export DEFAULT_DOCUMENT_ROOT="/app/workspace/default/public"
+            fi
+        fi
+
+        # Iniciar servidor web único con FrankenPHP / Caddy (resolución dinámica por subdominio)
+        export APP_PORT="${APP_PORT:-8000}"
+        CADDYFILE_PATH="/app/Caddyfile"
+        if [ ! -f "$CADDYFILE_PATH" ] && [ -f "/Caddyfile" ]; then
+            CADDYFILE_PATH="/Caddyfile"
+        fi
+
+        if command -v frankenphp >/dev/null 2>&1 && [ -f "$CADDYFILE_PATH" ]; then
+            echo "🌐 Iniciando servidor FrankenPHP (Caddy) dinámico en el puerto ${APP_PORT}..."
+            echo "   Ruta por subdominio: https://{proyecto}.tudominio.com -> /app/workspace/{proyecto}/public"
+            echo "   Fallback por defecto: ${DEFAULT_DOCUMENT_ROOT}"
+            frankenphp run --config "$CADDYFILE_PATH" --adapter caddyfile > /var/log/frankenphp.log 2>&1 &
+        elif command -v caddy >/dev/null 2>&1 && [ -f "$CADDYFILE_PATH" ]; then
+            echo "🌐 Iniciando servidor Caddy dinámico en el puerto ${APP_PORT}..."
+            caddy run --config "$CADDYFILE_PATH" --adapter caddyfile > /var/log/caddy.log 2>&1 &
+        else
+            echo "⚠️ FrankenPHP/Caddy no encontrado o sin Caddyfile; omitiendo servidor web."
         fi
 
         echo "🚀 Iniciando Antigravity CLI Daemon..."
