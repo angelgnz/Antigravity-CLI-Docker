@@ -2,7 +2,7 @@
 
 Este proyecto está configurado para desplegar el daemon de **Google Antigravity CLI (`agy`)** en modo **Remote Control** utilizando **Coolify** y su sistema de construcción **Railpack**.
 
-Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas necesarias (Composer, GitHub CLI `gh`, Node.js) para desarrollar proyectos en la nube.
+Está preconfigurado para utilizar **PHP 8.4** (con **FrankenPHP / Caddy**) y contiene las herramientas necesarias (Composer, GitHub CLI `gh`, Node.js 24, Python 3) para desarrollar proyectos en la nube.
 
 ---
 
@@ -14,7 +14,8 @@ Está preconfigurado para utilizar **PHP 8.4** y contiene las herramientas neces
 - 🧩 **Hook por Repositorio (`.agy-init.sh`)**: Soporte para scripts de inicialización personalizados dentro de cada proyecto clonado sin modificar el contenedor base.
 - 🗄️ **MariaDB Integrado**: Servidor de BD interno configurado de manera automática en cada despliegue.
 - 🐙 **GitHub CLI (`gh`)**: Incluido para operaciones de Git automatizadas o asistidas por el agente.
-- 📦 **Node.js 24 (vía NVM)**: Listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
+- 📦 **Node.js 24 (vía NVM)**: Instalado y persistido en el volumen de datos, listo para compilar assets frontend de Laravel (Vite, Tailwind, etc).
+- 🐍 **Python 3 (`python3`, `pip`, `venv`)**: Preinstalado para scripts auxiliares, herramientas de análisis o automatizaciones del agente.
 
 ---
 
@@ -67,6 +68,7 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 
 **Variables de Entorno:**
 - `INSTANCE_NAME`: Nombre descriptivo (ej. `mi-coolify-agy`).
+- `APP_PORT`: (Opcional) Puerto donde escucha FrankenPHP/Caddy para servir tus proyectos web (por defecto `8000`).
 - `GH_TOKEN`: (Opcional) Tu Personal Access Token (Classic) de GitHub. Puedes crearlo directamente con los permisos necesarios preseleccionados desde este enlace: **[👉 Crear Token de GitHub preconfigurado](https://github.com/settings/tokens/new?description=Antigravity+CLI+Daemon&scopes=repo,read:org,workflow)** (incluye `repo` para repositorios privados, `read:org` para organizaciones y `workflow` para flujos de CI/CD).
 - `CLONE_REPOSITORIES`: Lista separada por comas de repositorios a clonar automáticamente (ej. `tu-usuario/repo1, https://github.com/tu-usuario/repo2.git`).
 - `TARGET_BRANCH`: Rama a la que cambiar o crear al clonar (por defecto `antigravity`).
@@ -77,6 +79,7 @@ Antes de hacer el primer despliegue, configura lo siguiente en la pestaña de aj
 - `AUTO_APPROVE`: (Opcional) Define `true` para auto-aprobar tanto herramientas como cambios de código sin confirmación interactiva.
 - `TOOL_PERMISSION`: (Opcional) Control granular para herramientas y comandos de terminal (`"always-proceed"`, `"request-review"`, `"proceed-in-sandbox"`, `"strict"`).
 - `ARTIFACT_REVIEW_POLICY`: (Opcional) Control granular para revisión de código y artefactos (`"always-proceed"`, `"asks-for-review"`, `"agent-decides"`). Si no se define ninguna, se mantiene el comportamiento por defecto de Antigravity.
+- `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `GEOIP_DOWNLOAD_URL`, `GEOIP_DB_PATH`, `MAXMIND_ACCOUNT_ID`, `MAXMIND_LICENSE_KEY`: (Opcionales) Si se definen en Coolify, se inyectan automáticamente en el archivo `.env` de los proyectos clonados al inicializarse.
 
 **Almacenamiento Persistente (Storage):**
 Para que tu sesión de Google y el caché no se pierdan al redesplegar, añade un volumen persistente:
@@ -84,7 +87,7 @@ Para que tu sesión de Google y el caché no se pierdan al redesplegar, añade u
 - **Destination**: `/app/data`
 
 ### 3. Desplegar
-Haz clic en **Deploy**. Railpack leerá el archivo `railpack.json`, instalará PHP 8.4, Node 20, y descargará los binarios de `agy` y `gh`. Al finalizar, el contenedor arrancará con el daemon de Antigravity.
+Haz clic en **Deploy**. Railpack leerá el archivo `railpack.json`, instalará PHP 8.4 (con FrankenPHP/Caddy), MariaDB, Python 3, `gh` y el CLI de `agy`. Al iniciar el contenedor, configurará Node.js 24 (vía NVM en `/app/data/.nvm`), aprovisionará los repositorios y levantará tanto el servidor web como el daemon de Antigravity.
 
 ---
 
